@@ -5,7 +5,7 @@ echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
     <section name="directory" description="Serving Directory Configuration for this user">
       <domain name="' . $_POST['domain'] . '">
         <user id="' . $_POST['user'] . '">
-	  <params>
+	      <params>
             <param name="vm-storage-dir" value="/efs"/>
             <param name="vm-storage-dir-shared" value="true"/>
             <param name="password" value="xyzzy"/>
@@ -14,7 +14,7 @@ echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
             <param name="vm-alternate-greet-id" value="8661234567"/>
           </params>
         </user>
-      </include>
+      </domain>
     </section>
   </document>';
 
