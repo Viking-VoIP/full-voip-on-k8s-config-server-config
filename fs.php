@@ -40,18 +40,27 @@
                 </condition>
             </extension>
 
+            <extension name="chech_vm">
+        		<condition field="${destination_number}" expression="^\*99$">
+		            <action application="answer"/>
+                    <action application="voicemail" data="check auth default $${domain} ${caller_id_number}"/>
+                    <action application="hangup"/>
+                </condition>
+            </extension>
+
             <extension name="user-to-user">
-		<condition field="${destination_number}" expression="^(7[0-9]{8})$" require-nested="false">
+        		<condition field="${destination_number}" expression="^(7[0-9]{8})$" require-nested="false">
                     <action application="log" data="ERR header: ${sip_h_X-application}"/>
                     <condition field="${sip_h_X-application}" expression="^voicemail$">
                         <action application="set" data="application=VOICEMAIL"/>
-                        <action application="log" data="CRIT Trying to send incoming call to ${destination_number} to voicemail"/>
-			<action application="voicemail" data="default $${domain} ${destination_number}"/>
+            			<action application="log" data="CRIT Trying to send incoming call to ${destination_number} to voicemail"/>
+                        <action application="answer"/>
+            			<action application="voicemail" data="default $${domain} ${destination_number}"/>
                         <action application="hangup"/>
                         <anti-action application="set" data="application=USER-TO-USER"/>
-			<anti-action application="bridge" data="sofia/external/${destination_number}@sip-proxy.service.consul:5066"/>
+            			<anti-action application="bridge" data="sofia/external/${destination_number}@sip-proxy.service.consul:5066"/>
                         <anti-action application="hangup"/>
-		    </condition>
+		            </condition>
                 </condition>
             </extension>
 
