@@ -1,0 +1,9 @@
+<?php
+$dbhost="{{ DBHOST }}";
+$user="{{ DBUSER }}";
+$pass="{{ DBPASS }}";
+$dbh = new PDO('mysql:host=$dbhost;dbname=viking', $user, $pass);
+if (!$dbh) {
+	die("Connection failed");
+}
+?>

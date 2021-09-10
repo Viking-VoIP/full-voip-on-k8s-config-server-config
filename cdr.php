@@ -1,54 +1,47 @@
 <?php
-    require 'aws-autoloader.php';
 
-    use Aws\S3\S3Client;
-    // phpinfo();
-    // $writefile = fopen('/tmp/dump.txt',"w");
-    // fwrite($writefile, $raw_cdr);
-    // fclose($writefile);
+    include 'db_conn.php';
 
     if (!empty($_POST['cdr']))
     {
-        $raw_cdr = $_POST['cdr'];
-        $myXMLData = $raw_cdr;
+        $raw_data = file_get_contents('php://input') or die("I could not get the data");
+        $xml = new SimpleXMLElement($_POST['cdr']);
 
-        $xml=simplexml_load_string($myXMLData) or die("Error: Cannot create object");
+        $writefile = fopen('/tmp/dump.txt',"w");
 
-        if( $direction=$xml->variables->direction == "outbound" )
-        {
-            //$caller_id_name=$xml->callflow->caller_profile->caller_id_name;
-            $caller_id_number=$xml->callflow->caller_profile->caller_id_number;
-            //$caller_id_number=trim($caller_id_number);
-            $destination_number=$xml->callflow->caller_profile->callee_id_number;
-            //$context=$xml->callflow->caller_profile->context;
-            $start_stamp=$xml->variables->start_epoch;
-            $phonedesc=$xml->variables->app_phone_desc;
-            $hangup_cause=$xml->variables->hangup_cause;
-            $campaign_type=$xml->variables->app_campaing_type;
-            $dtmf_get=$xml->variables->dtmf_get;
-            //$epoch = trim($start_stamp); 
-            //date_default_timezone_set('Asia/Kolkata');
-            //$newdate= (string)date('Ymd_H_i_s', $epoch);
-            //$start=date('r', $start_stamp."<br>");
-            //$answer_stamp=$xml->variables->answer_epoch;
-            //$answer=date('r', $answer_stamp."<br>");
-            //$end_stamp=$xml->variables->end_epoch;
-            //$end=date('r', $end_stamp."<br>");
-            //$duration=$xml->variables->duration;
-            $billsec=$xml->variables->billsec;
-            $hangup_cause=$xml->variables->hangup_cause;
-            //$uuid=$xml->callflow->caller_profile->uuid;
+        $datetime_start=urldecode($xml->variables->start_stamp);
+        $datetime_answer=urldecode($xml->variables->answer_stamp);
+        $datetime_end=urldecode($xml->variables->end_stamp);
+        $last_app=urldecode($xml->variables->last_app);
+        $last_arg=urldecode($xml->variables->last_arg);
+        $duration=urldecode($xml->variables->duration);
+        $rtp_audio_in_mos=urldecode($xml->variables->rtp_audio_in_mos);
+        $rtp_audio_in_packet_count=urldecode($xml->variables->rtp_audio_in_packet_count);
+        $rtp_audio_in_skip_packet_count=urldecode($xml->variables->rtp_audio_in_skip_packet_count);
+        $sip_from_user=urldecode($xml->variables->sip_from_user);
+        $sip_from_display=urldecode($xml->variables->sip_from_display);
+        $sip_to_user=urldecode($xml->variables->sip_to_user);
+        $hangup_cause=urldecode($xml->variables->hangup_cause);
+        $hangup_cause_q850=urldecode($xml->variables->hangup_cause_q850);
+        $sip_call_id=urldecode($xml->variables->sip_call_id);
+        $remote_media_ip=urldecode($xml->variables->remote_media_ip);
+        $local_public_ip=urldecode($xml->variables->advertised_media_ip);
+        $write_codec=urldecode($xml->variables->write_codec);
+        $read_codec=urldecode($xml->variables->read_codec);
+        $context=urldecode($xml->callflow->caller_profile->context);
 
-            error_log( "Caller       : " . $caller_id_number );
-            error_log( "Called       : " . $destination_number );
-            error_log( "Start        : " . $start_stamp );
-            error_log( "Billsec      : " . $billsec );
-            error_log( "PhoneDesc    : " . $phonedesc );
-            error_log( "HangupCause  : " . $hangup_cause );
-            error_log( "DtmfGet      : " . $dtmf_get );
-            error_log( "CamapignType : " . $campaign_type );
+        $query = "insert cdr values (NULL, '$datetime_start', '$sip_call_id', '$sip_from_user', '$sip_from_display', '$sip_to_user', '$datetime_answer', '$duration', '$rtp_audio_in_mos', '$rtp_audio_in_packet_count', '$rtp_audio_in_skip_packet_count', '$datetime_end', '$hangup_cause', '$hangup_cause_q850', '$remote_media_ip', '$read_codec', '$local_public_ip', '$write_codec', '$context', '$last_app', '$last_arg' );";
+
+        fwrite($writefile,$query);
+        $stm = $dbh->query($query);
+        if ($stm) {
+            http_response_code(200);
+        } else {
+            http_response_code(503);
         }
+
     } else {
+        http_response_code(400);
         error_log( "No data in", 0 );
         print("No data in");
     }
